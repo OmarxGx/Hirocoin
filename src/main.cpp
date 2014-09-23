@@ -1069,8 +1069,9 @@ int64 static GetBlockValue(const CBlockIndex* pindexLast, int64 nFees, bool addO
     int nHeight = pindexLast->nHeight;
     if (addOne) {nHeight += 1;}
     int mockSubsidy = 400;
-    const CBlockIndex* pindexFirst = pindexLast;
-    if (nHeight > 224000) {
+    if (nHeight > 290000) {
+        if (!addOne) pindexLast = pindexLast->pprev;
+        const CBlockIndex* pindexFirst = pindexLast;
         mockSubsidy = 200; // Average reward
         double diffTotal = 0;
         double lastDiff = GetDifficulty(pindexLast);
@@ -3353,7 +3354,14 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         CAddress addrFrom;
         uint64 nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
+        bool badVersion = false;
         if (pfrom->nVersion < MIN_PEER_PROTO_VERSION)
+           badVersion = true;
+       if (nBestHeight >= 290000 && pfrom->nVersion < 70012)
+           badVersion = true;
+        	
+       if (badVersion)
+
         {
             // disconnect from peers older than this proto version
             printf("partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString().c_str(), pfrom->nVersion);
